@@ -16,7 +16,10 @@
 
 package types
 
-import "io"
+import (
+	"io"
+	"os"
+)
 
 // BuilderBuildOptions specifies options for `nerdctl (image/builder) build`.
 type BuilderBuildOptions struct {
@@ -61,6 +64,8 @@ type BuilderBuildOptions struct {
 	Label []string
 	// BuildContext is the build context
 	BuildContext string
+	//ProcessFunc is export buildctl cmd process func, called after the buildctl process is started
+	ProcessFunc func(*os.Process)
 }
 
 // BuilderPruneOptions specifies options for `nerdctl builder prune`.
