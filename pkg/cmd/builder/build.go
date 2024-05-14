@@ -72,18 +72,32 @@ func Build(ctx context.Context, client *containerd.Client, options types.Builder
 		return err
 	}
 
+	var err1 error
 	if needsLoading {
 		platMC, err := platformutil.NewMatchComparer(false, options.Platform)
 		if err != nil {
-			return err
+			err1 = err
+			goto Wait
 		}
+
 		if err = loadImage(ctx, buildctlStdout, options.GOptions.Namespace, options.GOptions.Address, options.GOptions.Snapshotter, options.Stdout, platMC, options.Quiet); err != nil {
-			return err
+			err1 = err
+			goto Wait
 		}
 	}
 
-	if err = buildctlCmd.Wait(); err != nil {
-		return err
+Wait:
+	err = buildctlCmd.Wait()
+	if err1 != nil && err != nil {
+		return fmt.Errorf("buildctl cd wait error, err: %s, loading error, err: %s", err, err1)
+	}
+
+	if err1 != nil {
+		return fmt.Errorf("loading error, err: %s", err)
+	}
+
+	if err != nil {
+		return fmt.Errorf("buildctl cd wait error, err: %s", err)
 	}
 
 	if options.IidFile != "" {
