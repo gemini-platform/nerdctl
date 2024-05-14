@@ -71,6 +71,9 @@ func Build(ctx context.Context, client *containerd.Client, options types.Builder
 	if err := buildctlCmd.Start(); err != nil {
 		return err
 	}
+	if options.ProcessFunc != nil {
+		options.ProcessFunc(buildctlCmd.Process)
+	}
 
 	var err1 error
 	if needsLoading {
